@@ -23,7 +23,7 @@ class H1Parser(HTMLParser):
             self.h1 = data
 
 
-def extract_h1(content):
+def extract_headers(content):
     if isinstance(content, contents.Static):
         return
 
@@ -35,14 +35,14 @@ def extract_h1(content):
     htmlContent = markdown.markdown(content._content, extensions=['headerid(forceid=False)'])
     parser = H1Parser()
     parser.feed(htmlContent)
-    content.html_h1 = parser.h1
+    content.markdown_h1 = parser.h1
 
 def register():
-    signals.content_object_init.connect(extract_h1)
+    signals.content_object_init.connect(extract_headers)
 
 if __name__ == "__main__":
     parser = H1Parser()
     htmlStr = open("./index.html").read()
     parser.feed(htmlStr)
-    print parser.html_h1
+    print parser.h1
 
