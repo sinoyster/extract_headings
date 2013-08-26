@@ -2,8 +2,8 @@
 
 Any problems, please contact wilbur.ma@foxmail.com
 
-This is a very simple pelican plugin which extracts text of the first h1 tag from a markdown document.
-And the h1 text is saved in article.markdown_h1.
+This is a very simple pelican plugin which extracts the h1~h6 tag from a markdown document.
+And the headers are saved in a list called content.html_headers.
 
 ## Requirements
 *  python-markdown: pip install Markdown
