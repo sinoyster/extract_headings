@@ -2,11 +2,12 @@
 
 from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
-import os, re, markdown
+import os, sys, re, codecs, markdown
 from markdown.extensions import headerid
 
 def my_slugify(value, separator):
-    return "toc_{}".format(value.encode("hex"))
+    return "toc_{}".format(codecs.getencoder("hex")(value)[0])
+sys.modules['__builtin__'].__dict__["extract_headings_slugify"] = my_slugify
 
 class Heading:
     HeadRegex = re.compile("h[1-6]")
@@ -48,7 +49,7 @@ def extract_headings(content):
     if not extension in readers.MarkdownReader.file_extensions:
         return
 
-    htmlContent = markdown.markdown(content._content, extensions=['headerid(forceid=False)'])
+    htmlContent = markdown.markdown(content._content)
     parser = HeadingParser()
     parser.feed(htmlContent)
     content.html_headings = parser.headings
@@ -68,16 +69,16 @@ def extract_headings(content):
     for i in xrange(len(parser.headings)):
         head = parser.headings[i]
         head.parent = None
-        headID = headerid.slugify(unicode(head.value), "-")
+        headAnchor = "#{}".format(my_slugify(head.value, "-"))
         # first elem
         if 0 == i:
-            content.html_toc += ("<li>" + linkFormat).format(headID, head.value)
+            content.html_toc += ("<li>" + linkFormat).format(headAnchor, head.value)
             continue
         prevHead = parser.headings[i-1]
         if head.tag > prevHead.tag:
             head.parent = prevHead
             openListSetNum += 1
-            content.html_toc += ("<ul><li>" + linkFormat).format(headID, head.value)
+            content.html_toc += ("<ul><li>" + linkFormat).format(headAnchor, head.value)
         elif head.tag < prevHead.tag:
             currParent = prevHead.parent
             while currParent and (head.tag <= currParent.tag):
@@ -85,10 +86,10 @@ def extract_headings(content):
                 content.html_toc += ("</li></ul>")
                 currParent = currParent.parent
             head.parent = currParent
-            content.html_toc += ("</li><li>" + linkFormat).format(headID, head.value)
+            content.html_toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
         else:
             head.parent = prevHead.parent
-            content.html_toc += ("</li><li>" + linkFormat).format(headID, head.value)
+            content.html_toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
 
     while openListSetNum > 0:
         content.html_toc += ("</li></ul>")
