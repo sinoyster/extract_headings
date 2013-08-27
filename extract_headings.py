@@ -68,7 +68,7 @@ def extract_headings(content):
     for i in xrange(len(parser.headings)):
         head = parser.headings[i]
         head.parent = None
-        headID = headerid.slugify(head.value, "-")
+        headID = headerid.slugify(unicode(head.value), "-")
         # first elem
         if 0 == i:
             content.html_toc += ("<li>" + linkFormat).format(headID, head.value)
