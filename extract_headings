@@ -4,7 +4,7 @@ from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
 import os, re, markdown
 
-class Header:
+class Heading:
     HeadRegex = re.compile("h[1-6]")
     def __init__(self, tag, value):
         self.tag = tag
@@ -14,28 +14,28 @@ class Header:
         return "{}:{}".format(self.tag, self.value)
 
     @classmethod
-    def is_header(cls, tag):
+    def is_heading(cls, tag):
         return None != cls.HeadRegex.match(tag)
 
-class HeaderParser(HTMLParser):
+class HeadingParser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
-        self.headers = []
+        self.headings = []
         self.tagOpen = False
 
     def handle_starttag(self, tag, attrs):
-        if Header.is_header(tag):
-            self.headers.append(Header(tag, ""))
+        if Heading.is_heading(tag):
+            self.headings.append(Heading(tag, ""))
             self.tagOpen = True
 
     def handle_endtag(self, tag):
         self.tagOpen = False
 
     def handle_data(self, data):
-        if self.tagOpen and len(self.headers) > 0:
-            self.headers[-1].value = data
+        if self.tagOpen and len(self.headings) > 0:
+            self.headings[-1].value = data
 
-def extract_headers(content):
+def extract_headings(content):
     if isinstance(content, contents.Static):
         return
 
@@ -45,12 +45,12 @@ def extract_headers(content):
         return
 
     htmlContent = markdown.markdown(content._content, extensions=['headerid(forceid=False)'])
-    parser = HeaderParser()
+    parser = HeadingParser()
     parser.feed(htmlContent)
-    content.html_headers = parser.headers
+    content.html_headings = parser.headings
     # set article title to h1 if any
     content.html_h1 = ""
-    for head in parser.headers:
+    for head in parser.headings:
         if "h1" == head.tag:
             content.html_h1 = head.value
         if not content.html_h1:
@@ -61,14 +61,14 @@ def extract_headers(content):
     openListSetNum = 0
     linkFormat = "<a href='#toc_{0}'>{0}</a>"
     #linkFormat = ""
-    for i in xrange(len(parser.headers)):
-        head = parser.headers[i]
+    for i in xrange(len(parser.headings)):
+        head = parser.headings[i]
         head.parent = None
         # first elem
         if 0 == i:
             content.html_toc += ("<li>" + linkFormat).format(head.value)
             continue
-        prevHead = parser.headers[i-1]
+        prevHead = parser.headings[i-1]
         if head.tag > prevHead.tag:
             head.parent = prevHead
             openListSetNum += 1
@@ -88,13 +88,13 @@ def extract_headers(content):
     while openListSetNum > 0:
         content.html_toc += ("</li></ul>")
         openListSetNum -= 1
-    if len(parser.headers) > 1:
+    if len(parser.headings) > 1:
         content.html_toc += "</li></ul>"
     else:
         content.html_toc += "</ul>"
 
 def register():
-    signals.content_object_init.connect(extract_headers)
+    signals.content_object_init.connect(extract_headings)
 
 if __name__ == "__main__":
     parser = H1Parser()

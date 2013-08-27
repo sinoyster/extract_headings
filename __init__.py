@@ -1,1 +1,1 @@
-from .extract_headers import *
+from .extract_headings import *
