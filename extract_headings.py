@@ -3,6 +3,10 @@
 from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
 import os, re, markdown
+from markdown.extensions import headerid
+
+def my_slugify(value, separator):
+    return "toc_{}".format(value.encode("hex"))
 
 class Heading:
     HeadRegex = re.compile("h[1-6]")
@@ -59,20 +63,21 @@ def extract_headings(content):
     content.html_toc = "<ul>"
     prevHead = None
     openListSetNum = 0
-    linkFormat = "<a href='#toc_{0}'>{0}</a>"
+    linkFormat = "<a href='#{}'>{}</a>"
     #linkFormat = ""
     for i in xrange(len(parser.headings)):
         head = parser.headings[i]
         head.parent = None
+        headID = headerid.slugify(head.value, "-")
         # first elem
         if 0 == i:
-            content.html_toc += ("<li>" + linkFormat).format(head.value)
+            content.html_toc += ("<li>" + linkFormat).format(headID, head.value)
             continue
         prevHead = parser.headings[i-1]
         if head.tag > prevHead.tag:
             head.parent = prevHead
             openListSetNum += 1
-            content.html_toc += ("<ul><li>" + linkFormat).format(head.value)
+            content.html_toc += ("<ul><li>" + linkFormat).format(headID, head.value)
         elif head.tag < prevHead.tag:
             currParent = prevHead.parent
             while currParent and (head.tag <= currParent.tag):
@@ -80,10 +85,10 @@ def extract_headings(content):
                 content.html_toc += ("</li></ul>")
                 currParent = currParent.parent
             head.parent = currParent
-            content.html_toc += ("</li><li>" + linkFormat).format(head.value)
+            content.html_toc += ("</li><li>" + linkFormat).format(headID, head.value)
         else:
             head.parent = prevHead.parent
-            content.html_toc += ("</li><li>" + linkFormat).format(head.value)
+            content.html_toc += ("</li><li>" + linkFormat).format(headID, head.value)
 
     while openListSetNum > 0:
         content.html_toc += ("</li></ul>")
