@@ -58,36 +58,40 @@ def extract_headers(content):
     # set article toc
     content.html_toc = "<ul>"
     prevHead = None
+    openListSetNum = 0
     linkFormat = "<a href='#toc_{0}'>{0}</a>"
     #linkFormat = ""
     for i in xrange(len(parser.headers)):
         head = parser.headers[i]
+        head.parent = None
         # first elem
         if 0 == i:
             content.html_toc += ("<li>" + linkFormat).format(head.value)
             continue
-        # last elem
-        if len(parser.headers) == (i + 1):
-            content.html_toc += ("<li>" + linkFormat + "</li>").format(head.value)
-            break;
         prevHead = parser.headers[i-1]
-        nextHead = parser.headers[i+1]
         if head.tag > prevHead.tag:
+            head.parent = prevHead
+            openListSetNum += 1
             content.html_toc += ("<ul><li>" + linkFormat).format(head.value)
-            if head.tag == nextHead.tag:
-                content.html_toc += "</li>"
-            elif head.tag >= nextHead.tag and nextHead.tag:
-                content.html_toc += "</li></ul>"
         elif head.tag < prevHead.tag:
-            content.html_toc += ("</li></ul></li><li>" + linkFormat).format(head.value)
+            currParent = prevHead.parent
+            while currParent and (head.tag <= currParent.tag):
+                openListSetNum -= 1
+                content.html_toc += ("</li></ul>")
+                currParent = currParent.parent
+            head.parent = currParent
+            content.html_toc += ("</li><li>" + linkFormat).format(head.value)
         else:
+            head.parent = prevHead.parent
             content.html_toc += ("</li><li>" + linkFormat).format(head.value)
 
+    while openListSetNum > 0:
+        content.html_toc += ("</li></ul>")
+        openListSetNum -= 1
     if len(parser.headers) > 1:
-        content.html_toc += "</li></li></ul>"
-    else:
         content.html_toc += "</li></ul>"
-    print content.html_toc
+    else:
+        content.html_toc += "</ul>"
 
 def register():
     signals.content_object_init.connect(extract_headers)
