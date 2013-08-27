@@ -2,12 +2,12 @@
 
 from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
-import os, sys, re, codecs, markdown
-from markdown.extensions import headerid
+import os, sys, re, md5, markdown
 
-def my_slugify(value, separator):
-    return "toc_{}".format(codecs.getencoder("hex")(value)[0])
-sys.modules['__builtin__'].__dict__["extract_headings_slugify"] = my_slugify
+def my_default_slugify(value, sep):
+    m = md5.new()
+    m.update(value)
+    return "toc_{}".format(m.digest().encode("hex"))
 
 class Heading:
     HeadRegex = re.compile("h[1-6]")
@@ -65,7 +65,14 @@ def extract_headings(content):
     prevHead = None
     openListSetNum = 0
     linkFormat = "<a href='#{}'>{}</a>"
-    #linkFormat = ""
+    try:
+        my_slugify = content.settings['MY_SLUGIFY_FUNC']
+    except:
+        my_slugify = None
+    if not my_slugify:
+        my_slugify = my_default_slugify
+        #my_slugify = markdown.extensions.headerid.slugify
+        #head.value = head.value.decode("UTF-8")
     for i in xrange(len(parser.headings)):
         head = parser.headings[i]
         head.parent = None
