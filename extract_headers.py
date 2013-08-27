@@ -11,7 +11,7 @@ class Header:
         self.value = value
 
     def __repr__(self):
-        return "{}:{}".format(self.tag, self.value.encode("UTF-8"))
+        return "{}:{}".format(self.tag, self.value)
 
     @classmethod
     def is_header(cls, tag):
