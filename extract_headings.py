@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- encoding: UTF-8 -*-
 
 from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
