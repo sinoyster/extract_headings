@@ -47,15 +47,15 @@ class HeadingParser(HTMLParser):
         prevHead = None
         openListSetNum = 0
         linkFormat = "<a href='#{}'>{}</a>"
-        for i in xrange(len(parser.headings)):
-            head = parser.headings[i]
+        for i in xrange(len(self.headings)):
+            head = self.headings[i]
             head.parent = None
             headAnchor = "{}".format(slugify_func(head.value, "-"))
             # first elem
             if 0 == i:
                 self.toc += ("<li>" + linkFormat).format(headAnchor, head.value)
                 continue
-            prevHead = parser.headings[i-1]
+            prevHead = self.headings[i-1]
             if head.tag > prevHead.tag:
                 head.parent = prevHead
                 openListSetNum += 1
@@ -74,7 +74,7 @@ class HeadingParser(HTMLParser):
         while openListSetNum > 0:
             self.toc += ("</li></ul>")
             openListSetNum -= 1
-        if len(parser.headings) > 1:
+        if len(self.headings) > 1:
             self.toc += "</li></ul>"
         else:
             self.toc += "</ul>"
@@ -119,8 +119,10 @@ def register():
     signals.content_object_init.connect(extract_headings)
 
 if __name__ == "__main__":
-    parser = H1Parser()
-    htmlStr = open("./index.html").read()
+    parser = HeadingParser()
+    htmlStr = "<html><head></head><body><h1>hello</h1>\
+            <h2>hi, h2</h2><h2>hi, another h2</h2></body></html>"
     parser.feed(htmlStr)
-    print parser.h1
+    print parser.headings
+    print parser.generate_toc(my_default_slugify)
 
