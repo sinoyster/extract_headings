@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # -*- encoding: UTF-8 -*-
+# @author: wilbur.ma@foxmail.com
+# @date: 2013-08-23
+# @license: BSD 3-Clause License
+# @brief: parse h1~h6 headings and generate
+#         toc of a markdwon file
 
 from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
