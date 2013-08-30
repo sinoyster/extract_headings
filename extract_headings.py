@@ -42,7 +42,7 @@ class HeadingParser(HTMLParser):
         if self.tagOpen and len(self.headings) > 0:
             self.headings[-1].value = data
 
-    def generate_toc(slugify_func):
+    def generate_toc(self, slugify_func):
         self.toc = "<ul>"
         prevHead = None
         openListSetNum = 0
