@@ -28,6 +28,7 @@ class HeadingParser(HTMLParser):
         HTMLParser.__init__(self)
         self.headings = []
         self.tagOpen = False
+        self.toc = ""
 
     def handle_starttag(self, tag, attrs):
         if Heading.is_heading(tag):
@@ -40,6 +41,45 @@ class HeadingParser(HTMLParser):
     def handle_data(self, data):
         if self.tagOpen and len(self.headings) > 0:
             self.headings[-1].value = data
+
+    def generate_toc(slugify_func):
+        self.toc = "<ul>"
+        prevHead = None
+        openListSetNum = 0
+        linkFormat = "<a href='#{}'>{}</a>"
+        for i in xrange(len(parser.headings)):
+            head = parser.headings[i]
+            head.parent = None
+            headAnchor = "{}".format(slugify_func(head.value, "-"))
+            # first elem
+            if 0 == i:
+                self.toc += ("<li>" + linkFormat).format(headAnchor, head.value)
+                continue
+            prevHead = parser.headings[i-1]
+            if head.tag > prevHead.tag:
+                head.parent = prevHead
+                openListSetNum += 1
+                self.toc += ("<ul><li>" + linkFormat).format(headAnchor, head.value)
+            elif head.tag < prevHead.tag:
+                currParent = prevHead.parent
+                while currParent and (head.tag <= currParent.tag):
+                    openListSetNum -= 1
+                    self.toc += ("</li></ul>")
+                    currParent = currParent.parent
+                head.parent = currParent
+                self.toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
+            else:
+                head.parent = prevHead.parent
+                self.toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
+        while openListSetNum > 0:
+            self.toc += ("</li></ul>")
+            openListSetNum -= 1
+        if len(parser.headings) > 1:
+            self.toc += "</li></ul>"
+        else:
+            self.toc += "</ul>"
+        return self.toc
+
 
 def extract_headings(content):
     if isinstance(content, contents.Static):
@@ -58,14 +98,12 @@ def extract_headings(content):
     content.html_h1 = ""
     for head in parser.headings:
         if "h1" == head.tag:
+            # use the first h1 heading
             content.html_h1 = head.value
-        if not content.html_h1:
-            content.html_h1 = content.title
-    # set article toc
-    content.html_toc = "<ul>"
-    prevHead = None
-    openListSetNum = 0
-    linkFormat = "<a href='#{}'>{}</a>"
+            break
+    if not content.html_h1:
+        content.html_h1 = content.title
+
     try:
         my_slugify = content.settings['MY_SLUGIFY_FUNC']
     except:
@@ -74,38 +112,8 @@ def extract_headings(content):
         my_slugify = my_default_slugify
         #my_slugify = markdown.extensions.headerid.slugify
         #head.value = head.value.decode("UTF-8")
-    for i in xrange(len(parser.headings)):
-        head = parser.headings[i]
-        head.parent = None
-        headAnchor = "{}".format(my_slugify(head.value, "-"))
-        # first elem
-        if 0 == i:
-            content.html_toc += ("<li>" + linkFormat).format(headAnchor, head.value)
-            continue
-        prevHead = parser.headings[i-1]
-        if head.tag > prevHead.tag:
-            head.parent = prevHead
-            openListSetNum += 1
-            content.html_toc += ("<ul><li>" + linkFormat).format(headAnchor, head.value)
-        elif head.tag < prevHead.tag:
-            currParent = prevHead.parent
-            while currParent and (head.tag <= currParent.tag):
-                openListSetNum -= 1
-                content.html_toc += ("</li></ul>")
-                currParent = currParent.parent
-            head.parent = currParent
-            content.html_toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
-        else:
-            head.parent = prevHead.parent
-            content.html_toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
+    content.html_toc = parser.generate_toc(my_slugify)
 
-    while openListSetNum > 0:
-        content.html_toc += ("</li></ul>")
-        openListSetNum -= 1
-    if len(parser.headings) > 1:
-        content.html_toc += "</li></ul>"
-    else:
-        content.html_toc += "</ul>"
 
 def register():
     signals.content_object_init.connect(extract_headings)
