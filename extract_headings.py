@@ -47,8 +47,8 @@ class HeadingParser(HTMLParser):
         if self.tagOpen and len(self.headings) > 0:
             self.headings[-1].value = data
 
-    def generate_toc(self, slugify_func):
-        self.toc = "<ul>"
+    def generate_toc(self, slugify_func, toc_class):
+        self.toc = "<ul class='{}'>".format(toc_class)
         prevHead = None
         openListSetNum = 0
         linkFormat = "<a href='#{}'>{}</a>"
@@ -109,16 +109,19 @@ def extract_headings(content):
     if not content.html_h1:
         content.html_h1 = content.title
 
-    try:
+    if content.settings.has_key('MY_SLUGIFY_FUNC'):
         my_slugify = content.settings['MY_SLUGIFY_FUNC']
-    except:
+    else:
         my_slugify = None
     if not my_slugify:
         my_slugify = my_default_slugify
         #my_slugify = markdown.extensions.headerid.slugify
         #head.value = head.value.decode("UTF-8")
-    content.html_toc = parser.generate_toc(my_slugify)
-
+    if content.settings.has_key('MY_TOC_CLASS'):
+        my_toc_class = content.settings['MY_TOC_CLASS']
+    else:
+        my_toc_class = 'dropdown-menu'
+    content.html_toc = parser.generate_toc(my_slugify, my_toc_class)
 
 def register():
     signals.content_object_init.connect(extract_headings)
