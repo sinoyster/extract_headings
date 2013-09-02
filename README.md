@@ -23,7 +23,7 @@ First, clone the plugin repo to your plugin directory:
 
     git clone https://github.com/wilbur-ma/extract_headings ${PELICAN_PLUGIN_DIRECTORY}/extract_headings
 
-Then add or update the `MD_EXTENSION` and `PLUGINS` variable in your pelican configuration:
+Then add or update the `MD_EXTENSION` and `PLUGINS` variables in your pelican configuration:
 
     MD_EXTENSIONS = (['headerid'])
     PLUGINS = ['extract_headings']
