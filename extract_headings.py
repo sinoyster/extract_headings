@@ -9,6 +9,7 @@
 from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
 import os, sys, re, md5, markdown
+from markdown.extensions import headerid
 
 class Heading:
     HeadRegex = re.compile("h[1-6]")
@@ -109,7 +110,7 @@ def extract_headings(content):
     if content.settings.has_key('MY_SLUGIFY_FUNC'):
         my_slugify = content.settings['MY_SLUGIFY_FUNC']
     else:
-        my_slugify = markdown.extensions.headerid.slugify
+        my_slugify = headerid.slugify
     if content.settings.has_key('MY_TOC_CLASS'):
         my_toc_class = content.settings['MY_TOC_CLASS']
     else:
