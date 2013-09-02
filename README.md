@@ -19,9 +19,9 @@ BSD (3-Clause) License. Please see LICENSE.txt for more details.
 
 ## Usage
 
-First, clone the plugin repo:
+First, clone the plugin repo to your plugin directory:
 
-    git clone 
+    git clone https://github.com/wilbur-ma/extract_headings ${PELICAN_PLUGIN_DIRECTORY}/extract_headings
 
 Then add or update the `MD_EXTENSION` and `PLUGINS` variable in your pelican configuration:
 
