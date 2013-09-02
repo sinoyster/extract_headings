@@ -15,7 +15,18 @@ BSD (3-Clause) License. Please see LICENSE.txt for more details.
 
 ## Requirements
 
-*  python-markdown: pip install Markdown
+*  python-markdown: `pip install Markdown`
+
+## Usage
+
+First, clone the plugin repo:
+
+    git clone 
+
+Then add or update the `MD_EXTENSION` and `PLUGINS` variable in your pelican configuration:
+
+    MD_EXTENSIONS = (['headerid'])
+    PLUGINS = ['extract_headings']
 
 ## Use your own slugify function
 
