@@ -39,7 +39,7 @@ You can define your own slugify function in your pelican configuration, e.g.:
         return "toc_{}".format(m.digest().encode("hex"))
     MY_SLUGIFY_FUNC = my_slugify
     from markdown.extensions.headerid import HeaderIdExtension
-    MD_EXTENSIONS = (['toc', HeaderIdExtension(configs=[('slugify', my_slugify)])])
+    MD_EXTENSIONS = ([HeaderIdExtension(configs=[('slugify', my_slugify)])])
 
 You must set the `MY_SLUGIFY_FUNC` to your slugify function to let extrac_headings know.
 
