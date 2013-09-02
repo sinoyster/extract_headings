@@ -50,6 +50,8 @@ class HeadingParser(HTMLParser):
         for i in xrange(len(self.headings)):
             head = self.headings[i]
             head.parent = None
+            if type(head.value) != unicode:
+                head.value = unicode(head.value)
             headAnchor = "{}".format(slugify_func(head.value, "-"))
             # first elem
             if 0 == i:
