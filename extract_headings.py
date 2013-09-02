@@ -9,7 +9,6 @@
 from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
 import os, sys, re, md5, markdown
-from markdown.
 
 class Heading:
     HeadRegex = re.compile("h[1-6]")
