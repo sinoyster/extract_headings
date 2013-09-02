@@ -9,11 +9,7 @@
 from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
 import os, sys, re, md5, markdown
-
-def my_default_slugify(value, sep):
-    m = md5.new()
-    m.update(value)
-    return "toc_{}".format(m.digest().encode("hex"))
+from markdown.
 
 class Heading:
     HeadRegex = re.compile("h[1-6]")
@@ -112,9 +108,7 @@ def extract_headings(content):
     if content.settings.has_key('MY_SLUGIFY_FUNC'):
         my_slugify = content.settings['MY_SLUGIFY_FUNC']
     else:
-        my_slugify = my_default_slugify
-        #my_slugify = markdown.extensions.headerid.slugify
-        #head.value = head.value.decode("UTF-8")
+        my_slugify = markdown.extensions.headerid.slugify
     if content.settings.has_key('MY_TOC_CLASS'):
         my_toc_class = content.settings['MY_TOC_CLASS']
     else:
