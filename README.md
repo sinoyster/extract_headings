@@ -25,7 +25,7 @@ First, clone the plugin repo to your plugin directory:
 
 Then add or update the `MD_EXTENSION` and `PLUGINS` variables in your pelican configuration:
 
-    MD_EXTENSIONS = (['headerid'])
+    MD_EXTENSIONS = (['extra', 'codehilite', 'headerid'])
     PLUGINS = ['extract_headings']
 
 ## Use your own slugify function
@@ -33,7 +33,7 @@ Then add or update the `MD_EXTENSION` and `PLUGINS` variables in your pelican co
 You can define your own slugify function in your pelican configuration, e.g.:
 
     import md5 
-     def my_slugify(value, sep):
+    def my_slugify(value, sep):
         m = md5.new()
         m.update(value)
         return "toc_{}".format(m.digest().encode("hex"))
