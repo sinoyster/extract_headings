@@ -104,8 +104,6 @@ def extract_headings(content):
             # use the first h1 heading
             content.html_h1 = head.value
             break
-    if not content.html_h1:
-        content.html_h1 = content.title
 
     if content.settings.has_key('MY_SLUGIFY_FUNC'):
         my_slugify = content.settings['MY_SLUGIFY_FUNC']
