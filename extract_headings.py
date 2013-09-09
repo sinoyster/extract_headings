@@ -97,13 +97,6 @@ def extract_headings(content):
     parser = HeadingParser()
     parser.feed(htmlContent)
     content.html_headings = parser.headings
-    # set article title to h1 if any
-    content.html_h1 = ""
-    for head in parser.headings:
-        if "h1" == head.tag:
-            # use the first h1 heading
-            content.html_h1 = head.value
-            break
 
     if content.settings.has_key('MY_SLUGIFY_FUNC'):
         my_slugify = content.settings['MY_SLUGIFY_FUNC']

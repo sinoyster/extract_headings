@@ -4,8 +4,7 @@ Any problems, please contact wilbur.ma@foxmail.com
 
 This is a very simple pelican plugin which extracts the h1~h6 headings from a markdown document.
 
-This plugin introduces three new member to the pelican content object:
-*  html_h1: the first h1 heading, if h1 not found, html_h1 is not defined
+This plugin introduces two new member to the pelican content object:
 *  html_headings: a list of heading objects like {tag: "h1", value: "Hello this is h1 heading"}
 *  html_toc: table of contents build with the markdown headings, html unordered list style
 
