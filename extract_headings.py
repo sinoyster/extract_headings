@@ -43,8 +43,7 @@ class HeadingParser(HTMLParser):
         if self.tagOpen and len(self.headings) > 0:
             self.headings[-1].value = data
 
-    def generate_toc(self, slugify_func, toc_class):
-        self.toc = "<ul class='{}'>".format(toc_class)
+    def generate_toc(self, slugify_func):
         prevHead = None
         openListSetNum = 0
         linkFormat = "<a href='#{}'>{}</a>"
@@ -78,9 +77,7 @@ class HeadingParser(HTMLParser):
             self.toc += ("</li></ul>")
             openListSetNum -= 1
         if len(self.headings) > 1:
-            self.toc += "</li></ul>"
-        else:
-            self.toc += "</ul>"
+            self.toc += "</li>"
         return self.toc
 
 
@@ -102,11 +99,7 @@ def extract_headings(content):
         my_slugify = content.settings['MY_SLUGIFY_FUNC']
     else:
         my_slugify = headerid.slugify
-    if content.settings.has_key('MY_TOC_CLASS'):
-        my_toc_class = content.settings['MY_TOC_CLASS']
-    else:
-        my_toc_class = 'dropdown-menu'
-    content.html_toc = parser.generate_toc(my_slugify, my_toc_class)
+    content.html_toc = parser.generate_toc(my_slugify)
 
 def register():
     signals.content_object_init.connect(extract_headings)
