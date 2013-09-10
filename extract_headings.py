@@ -90,9 +90,8 @@ def extract_headings(content):
     if not extension in readers.MarkdownReader.file_extensions:
         return
 
-    htmlContent = markdown.markdown(content._content)
     parser = HeadingParser()
-    parser.feed(htmlContent)
+    parser.feed(content._content)
     content.html_headings = parser.headings
 
     if content.settings.has_key('MY_SLUGIFY_FUNC'):
