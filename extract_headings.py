@@ -85,11 +85,6 @@ def extract_headings(content):
     if isinstance(content, contents.Static):
         return
 
-    markdownFilePath = content.source_path
-    extension = os.path.splitext(markdownFilePath)[1][1:]
-    if not extension in readers.MarkdownReader.file_extensions:
-        return
-
     parser = HeadingParser()
     parser.feed(content._content)
     content.html_headings = parser.headings
