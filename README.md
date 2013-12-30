@@ -43,6 +43,9 @@ You should tell the extrac_headings to use your slugify function by setting the 
 
     MY_SLUGIFY_FUNC = my_slugify
 
+## ul or ol
+You can set the output list type via `MY_HEADING_LIST_STYLE` configuration. By default extract_headings outputs the tocs in a unordered list, you can use ordered list by setting `MY_HEADING_LIST_STYLE` to 'ol'.
+
 ## Thanks
 
 *  extract_toc plugin
