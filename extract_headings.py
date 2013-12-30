@@ -43,7 +43,7 @@ class HeadingParser(HTMLParser):
         if self.tagOpen and len(self.headings) > 0:
             self.headings[-1].value = data
 
-    def generate_toc(self, slugify_func):
+    def generate_toc(self, slugify_func, list_style):
         prevHead = None
         openListSetNum = 0
         linkFormat = "<a href='#{}'>{}</a>"
@@ -61,12 +61,12 @@ class HeadingParser(HTMLParser):
             if head.tag > prevHead.tag:
                 head.parent = prevHead
                 openListSetNum += 1
-                self.toc += ("<ul><li>" + linkFormat).format(headAnchor, head.value)
+                self.toc += ("<{}><li>" + linkFormat).format(list_style, headAnchor, head.value)
             elif head.tag < prevHead.tag:
                 currParent = prevHead.parent
                 while currParent and (head.tag <= currParent.tag):
                     openListSetNum -= 1
-                    self.toc += ("</li></ul>")
+                    self.toc += ("</li></{}>".format(list_style))
                     currParent = currParent.parent
                 head.parent = currParent
                 self.toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
@@ -74,7 +74,7 @@ class HeadingParser(HTMLParser):
                 head.parent = prevHead.parent
                 self.toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
         while openListSetNum > 0:
-            self.toc += ("</li></ul>")
+            self.toc += ("</li></{}>".format(list_style))
             openListSetNum -= 1
         if len(self.headings) > 1:
             self.toc += "</li>"
@@ -93,7 +93,11 @@ def extract_headings(content):
         my_slugify = content.settings['MY_SLUGIFY_FUNC']
     else:
         my_slugify = headerid.slugify
-    content.html_toc = parser.generate_toc(my_slugify)
+    if content.settings.has_key('MY_HEADING_LIST_STYLE'):
+        list_style = content.settings['MY_HEADING_LIST_STYLE']
+    else:
+        list_style = "ul"
+    content.html_toc = parser.generate_toc(my_slugify, list_style)
 
 def register():
     signals.content_object_init.connect(extract_headings)
