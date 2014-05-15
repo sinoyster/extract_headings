@@ -89,14 +89,8 @@ def extract_headings(content):
     parser.feed(content._content)
     content.html_headings = parser.headings
 
-    if content.settings.has_key('MY_SLUGIFY_FUNC'):
-        my_slugify = content.settings['MY_SLUGIFY_FUNC']
-    else:
-        my_slugify = headerid.slugify
-    if content.settings.has_key('MY_HEADING_LIST_STYLE'):
-        list_style = content.settings['MY_HEADING_LIST_STYLE']
-    else:
-        list_style = "ul"
+    my_slugify = content.settings.get("MY_SLUGIFY_FUNC", headerid.slugify)
+    list_style = content.settings.get("MY_HEADING_LIST_STYLE", "ul")
     content.html_toc = parser.generate_toc(my_slugify, list_style)
 
 def register():
