@@ -17,10 +17,10 @@ def gen_heading_id(heading_ids, slugify_func, heading_name):
     hID = slugify_func(heading_name, '-')
     i = 0
     while hID in heading_ids:
-        i += 1
         # duplicate heading id
-        logger.warn("found duplicate heading id from `{}'=>`{}', will call slugify function again".format(heading_name, hID))
-        hID = slugify_func("{}-{}".format(hID, i), '-')
+        i += 1
+        logger.warn("found duplicate heading id `{0}'=>`{1}', will try {1}_{2} instead".format(heading_name, hID, i))
+        hID = "{}_{}".format(hID, i)
     heading_ids.append(hID)
     return hID
 
