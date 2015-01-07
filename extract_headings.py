@@ -8,8 +8,21 @@
 
 from HTMLParser import HTMLParser
 from pelican import signals, readers, contents
-import os, sys, re, md5, markdown
+import os, sys, re, md5, markdown, logging
 from markdown.extensions import headerid
+
+logger = logging.getLogger(__name__)
+
+def gen_heading_id(heading_ids, slugify_func, heading_name):
+    hID = slugify_func(heading_name, '-')
+    i = 0
+    while hID in heading_ids:
+        i += 1
+        # duplicate heading id
+        logger.warn("found duplicate heading id from `{}'=>`{}', will call slugify function again".format(heading_name, hID))
+        hID = slugify_func("{}-{}".format(hID, i), '-')
+    heading_ids.append(hID)
+    return hID
 
 class Heading:
     HeadRegex = re.compile("h[1-6]")
@@ -27,6 +40,7 @@ class Heading:
 class HeadingParser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
+        self.heading_ids = []
         self.headings = []
         self.tagOpen = False
         self.toc = ""
@@ -52,7 +66,7 @@ class HeadingParser(HTMLParser):
             head.parent = None
             if type(head.value) != unicode:
                 head.value = unicode(head.value)
-            headAnchor = "{}".format(slugify_func(head.value, "-"))
+            headAnchor = "{}".format(gen_heading_id(self.heading_ids, slugify_func, head.value))
             # first elem
             if 0 == i:
                 self.toc += ("<li>" + linkFormat).format(headAnchor, head.value)
