@@ -90,7 +90,7 @@ def extract_headings(content):
     content.html_headings = parser.headings
 
     my_slugify = content.settings.get("MY_SLUGIFY_FUNC", headerid.slugify)
-    list_style = content.settings.get("MY_HEADING_LIST_STYLE", "ul")
+    list_style = content.settings.get("MY_TOC_LIST_TYPE", "ul")
     content.html_toc = parser.generate_toc(my_slugify, list_style)
 
 def register():
