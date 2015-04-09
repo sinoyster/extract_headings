@@ -43,7 +43,7 @@ class HeadingParser(HTMLParser):
         self.heading_ids = []
         self.headings = []
         self.tagOpen = False
-        self.toc = ""
+        self.toc = u""
 
     def handle_starttag(self, tag, attrs):
         if Heading.is_heading(tag):
@@ -60,38 +60,38 @@ class HeadingParser(HTMLParser):
     def generate_toc(self, slugify_func, list_style):
         prevHead = None
         openListSetNum = 0
-        linkFormat = "<a href='#{}'>{}</a>"
+        linkFormat = u"<a href='#{}'>{}</a>"
         for i in xrange(len(self.headings)):
             head = self.headings[i]
             head.parent = None
             if type(head.value) != unicode:
                 head.value = unicode(head.value)
-            headAnchor = "{}".format(gen_heading_id(self.heading_ids, slugify_func, head.value))
+            headAnchor = u"{}".format(gen_heading_id(self.heading_ids, slugify_func, head.value))
             # first elem
             if 0 == i:
-                self.toc += ("<li>" + linkFormat).format(headAnchor, head.value)
+                self.toc += (u"<li>" + linkFormat).format(headAnchor, head.value)
                 continue
             prevHead = self.headings[i-1]
             if head.tag > prevHead.tag:
                 head.parent = prevHead
                 openListSetNum += 1
-                self.toc += ("<{}><li>" + linkFormat).format(list_style, headAnchor, head.value)
+                self.toc += (u"<{}><li>" + linkFormat).format(list_style, headAnchor, head.value)
             elif head.tag < prevHead.tag:
                 currParent = prevHead.parent
                 while currParent and (head.tag <= currParent.tag):
                     openListSetNum -= 1
-                    self.toc += ("</li></{}>".format(list_style))
+                    self.toc += (u"</li></{}>".format(list_style))
                     currParent = currParent.parent
                 head.parent = currParent
-                self.toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
+                self.toc += (u"</li><li>" + linkFormat).format(headAnchor, head.value)
             else:
                 head.parent = prevHead.parent
-                self.toc += ("</li><li>" + linkFormat).format(headAnchor, head.value)
+                self.toc += (u"</li><li>" + linkFormat).format(headAnchor, head.value)
         while openListSetNum > 0:
-            self.toc += ("</li></{}>".format(list_style))
+            self.toc += (u"</li></{}>".format(list_style))
             openListSetNum -= 1
         if len(self.headings) > 1:
-            self.toc += "</li>"
+            self.toc += u"</li>"
         return self.toc
 
 
