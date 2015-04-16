@@ -34,7 +34,7 @@ You can define your own slugify function in your pelican configuration, e.g.:
     import md5 
     def my_slugify(value, sep):
         m = md5.new()
-        m.update(value)
+        m.update(value.encode("UTF-8"))
         return "toc_{}".format(m.digest().encode("hex"))
     from markdown.extensions.headerid import HeaderIdExtension
     MD_EXTENSIONS = ([HeaderIdExtension(configs=[('slugify', my_slugify)])])
