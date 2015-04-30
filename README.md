@@ -46,6 +46,9 @@ You should tell the extrac_headings to use your slugify function by setting the 
 ## ul or ol
 You can set the output list type via `MY_TOC_LIST_TYPE` configuration. By default extract_headings outputs the tocs in a unordered list, you can use ordered list by setting `MY_TOC_LIST_TYPE` to 'ol'.
 
+## Headings' id attribute
+If you do not want to add id attribute to content's headings, just set `MY_TOC_UPDATE_CONTENT = False` in your pelican configuration.
+
 ## Thanks
 
 *  extract_toc plugin
