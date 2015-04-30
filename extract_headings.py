@@ -104,7 +104,7 @@ def extract_headings(content):
     hParser.feed(content._content)
 
     content.html_headings = hParser.generate_headings()
-    content.html_toc = hParser.generate_toc(my_slugify, list_style, my_update_headings)
+    content.html_toc = hParser.generate_toc(list_style, my_update_headings)
     if my_update_headings:
         content._content = hParser.generate_html()
 
