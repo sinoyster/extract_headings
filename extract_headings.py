@@ -6,26 +6,13 @@
 # @brief: parse h1~h6 headings and generate
 #         toc of a markdwon file
 
-from HTMLParser import HTMLParser
+from bs4 import BeautifulSoup
 from pelican import signals, readers, contents
 import os, sys, re, md5, markdown, logging
-from markdown.extensions import headerid
 
 logger = logging.getLogger(__name__)
 
-def gen_heading_id(heading_ids, slugify_func, heading_name):
-    hID = slugify_func(heading_name, '-')
-    i = 0
-    while hID in heading_ids:
-        # duplicate heading id
-        i += 1
-        logger.warn("found duplicate heading id `{0}'=>`{1}', will try {1}_{2} instead".format(heading_name, hID, i))
-        hID = "{}_{}".format(hID, i)
-    heading_ids.append(hID)
-    return hID
-
 class Heading:
-    HeadRegex = re.compile("h[1-6]")
     def __init__(self, tag, value):
         self.tag = tag
         self.value = value
@@ -33,88 +20,103 @@ class Heading:
     def __repr__(self):
         return "{}:{}".format(self.tag, self.value)
 
-    @classmethod
-    def is_heading(cls, tag):
-        return None != cls.HeadRegex.match(tag)
-
-class HeadingParser(HTMLParser):
-    def __init__(self):
-        HTMLParser.__init__(self)
+class HeadingParser:
+    def __init__(self, slugify_func):
+        self.slugify_func = slugify_func
         self.heading_ids = []
         self.headings = []
-        self.tagOpen = False
         self.toc = u""
+        self.soup = None
 
-    def handle_starttag(self, tag, attrs):
-        if Heading.is_heading(tag):
-            self.headings.append(Heading(tag, ""))
-            self.tagOpen = True
+    def gen_heading_id(self, heading_text):
+        hID = unicode(self.slugify_func(heading_text, '-'))
+        i = 0
+        while hID in self.heading_ids:
+            # duplicate heading id
+            i += 1
+            logger.warn("found duplicate heading id `{0}'=>`{1}', will try {1}_{2} instead".format(heading_text, hID, i))
+            hID = u"{}_{}".format(hID, i)
+        self.heading_ids.append(hID)
+        return hID
 
-    def handle_endtag(self, tag):
-        self.tagOpen = False
+    def feed(self, html_data):
+        self.soup = BeautifulSoup(html_data)
+        self.headings = self.soup.find_all(re.compile("^h[1-6]$"))
 
-    def handle_data(self, data):
-        if self.tagOpen and len(self.headings) > 0:
-            self.headings[-1].value = data
+    def generate_headings(self):
+        return [Heading(h.name, h.text) for h in self.headings]
 
-    def generate_toc(self, slugify_func, list_style):
+    def generate_html(self):
+        return self.soup.decode()
+
+    def generate_toc(self, list_style, update=True):
+        toc = u""
         prevHead = None
         openListSetNum = 0
         linkFormat = u"<a href='#{}'>{}</a>"
         for i in xrange(len(self.headings)):
             head = self.headings[i]
             head.parent = None
-            if type(head.value) != unicode:
-                head.value = unicode(head.value)
-            headAnchor = u"{}".format(gen_heading_id(self.heading_ids, slugify_func, head.value))
-            # first elem
+            headAnchor = self.gen_heading_id(head.text)
+            if (update):
+                # update heading's id attribute
+                head["id"] = headAnchor
             if 0 == i:
-                self.toc += (u"<li>" + linkFormat).format(headAnchor, head.value)
+                # first elem
+                toc += (u"<li>" + linkFormat).format(headAnchor, head.text)
                 continue
             prevHead = self.headings[i-1]
-            if head.tag > prevHead.tag:
+            if head.name > prevHead.name:
                 head.parent = prevHead
                 openListSetNum += 1
-                self.toc += (u"<{}><li>" + linkFormat).format(list_style, headAnchor, head.value)
-            elif head.tag < prevHead.tag:
+                toc += (u"<{}><li>" + linkFormat).format(list_style, headAnchor, head.text)
+            elif head.name < prevHead.name:
                 currParent = prevHead.parent
-                while currParent and (head.tag <= currParent.tag):
+                while currParent and (head.name <= currParent.name):
                     openListSetNum -= 1
-                    self.toc += (u"</li></{}>".format(list_style))
+                    toc += (u"</li></{}>".format(list_style))
                     currParent = currParent.parent
                 head.parent = currParent
-                self.toc += (u"</li><li>" + linkFormat).format(headAnchor, head.value)
+                toc += (u"</li><li>" + linkFormat).format(headAnchor, head.text)
             else:
                 head.parent = prevHead.parent
-                self.toc += (u"</li><li>" + linkFormat).format(headAnchor, head.value)
+                toc += (u"</li><li>" + linkFormat).format(headAnchor, head.text)
         while openListSetNum > 0:
-            self.toc += (u"</li></{}>".format(list_style))
+            toc += (u"</li></{}>".format(list_style))
             openListSetNum -= 1
         if len(self.headings) > 1:
-            self.toc += u"</li>"
-        return self.toc
-
+            toc += u"</li>"
+        return toc
 
 def extract_headings(content):
     if isinstance(content, contents.Static):
         return
 
-    parser = HeadingParser()
-    parser.feed(content._content)
-    content.html_headings = parser.headings
-
-    my_slugify = content.settings.get("MY_SLUGIFY_FUNC", headerid.slugify)
     list_style = content.settings.get("MY_TOC_LIST_TYPE", "ul")
-    content.html_toc = parser.generate_toc(my_slugify, list_style)
+    my_update_headings = content.settings.get("MY_TOC_UPDATE_CONTENT", True)
+    my_slugify = content.settings.get("MY_SLUGIFY_FUNC", None)
+    if my_slugify is None:
+        # custom slugify function not defined
+        from markdown.extensions import headerid
+        my_slugify = headerid.slugify
+
+    hParser = HeadingParser(my_slugify)
+    hParser.feed(content._content)
+
+    content.html_headings = hParser.generate_headings()
+    content.html_toc = hParser.generate_toc(my_slugify, list_style, my_update_headings)
+    if my_update_headings:
+        content._content = hParser.generate_html()
 
 def register():
     signals.content_object_init.connect(extract_headings)
 
 if __name__ == "__main__":
-    parser = HeadingParser()
+    from markdown.extensions import headerid
+    parser = HeadingParser(headerid.slugify)
     htmlStr = "<html><head></head><body><h1>hello</h1>\
             <h2>hi, h2</h2><h2>hi, another h2</h2></body></html>"
     parser.feed(htmlStr)
     print parser.headings
-    print parser.generate_toc(my_default_slugify)
+    print parser.generate_toc('ul')
 
