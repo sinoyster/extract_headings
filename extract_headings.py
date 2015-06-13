@@ -18,7 +18,7 @@ class Heading:
         self.value = value
 
     def __repr__(self):
-        return "{}:{}".format(self.tag, self.value)
+        return u"{}:{}".format(self.tag, self.value)
 
 class HeadingParser:
     def __init__(self, slugify_func):
@@ -34,7 +34,7 @@ class HeadingParser:
         while hID in self.heading_ids:
             # duplicate heading id
             i += 1
-            logger.warn("found duplicate heading id `{0}'=>`{1}', will try {1}_{2} instead".format(heading_text, hID, i))
+            logger.warn(u"found duplicate heading id `{0}'=>`{1}', will try {1}_{2} instead".format(heading_text, hID, i))
             hID = u"{}_{}".format(hID, i)
         self.heading_ids.append(hID)
         return hID
