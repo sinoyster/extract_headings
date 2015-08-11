@@ -40,7 +40,7 @@ class HeadingParser:
         return hID
 
     def feed(self, html_data):
-        self.soup = BeautifulSoup(html_data)
+        self.soup = BeautifulSoup(html_data, "html.parser")
         self.headings = self.soup.find_all(re.compile("^h[1-6]$"))
 
     def generate_headings(self):
