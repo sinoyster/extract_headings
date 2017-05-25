@@ -7,10 +7,16 @@
 #         toc of a markdwon file
 
 from bs4 import BeautifulSoup
-from pelican import signals, readers, contents
-import os, sys, re, md5, markdown, logging
+from pelican import signals, contents
+#import os, sys, re, md5, markdown, logging
+import  re, logging
+from hashlib import md5
 
 logger = logging.getLogger(__name__)
+
+
+def xrange(x):
+    return iter(range(x))
 
 class Heading:
     def __init__(self, tag, value):
@@ -29,13 +35,16 @@ class HeadingParser:
         self.soup = None
 
     def gen_heading_id(self, heading_text):
-        hID = unicode(self.slugify_func(heading_text, '-'))
+        #hID = unicode(self.slugify_func(heading_text, '-'))
+        hID = self.slugify_func(heading_text, '-')
+        logger.info("Generate hID:[%s]" % hID)
         i = 0
         while hID in self.heading_ids:
-            # duplicate heading id
+            # duplicate heading id hash again
             i += 1
-            logger.warn(u"found duplicate heading id `{0}'=>`{1}', will try {1}_{2} instead".format(heading_text, hID, i))
-            hID = u"{}_{}".format(hID, i)
+            nID = md5(hID.encode('UTF-8')).hexdigest()
+            logger.warn(u"found duplicate heading id `{0}'=>`{1}', will try TOC_{2} instead".format(heading_text, hID, nID))
+            hID = u"{}_{}".format('TOC', nID)
         self.heading_ids.append(hID)
         return hID
 
@@ -117,6 +126,6 @@ if __name__ == "__main__":
     htmlStr = "<html><head></head><body><h1>hello</h1>\
             <h2>hi, h2</h2><h2>hi, another h2</h2></body></html>"
     parser.feed(htmlStr)
-    print parser.headings
-    print parser.generate_toc('ul')
+    print(parser.headings)
+    print(parser.generate_toc('ul'))
 
